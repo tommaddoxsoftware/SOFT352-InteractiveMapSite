@@ -1,0 +1,26 @@
+/* Nav Breakpoint */
+@media (max-width: 768px) {
+    .navbar-brand {
+        margin:auto;
+        text-align:center;
+        width:100%;
+    }
+
+    .navbar-collapse {
+        background-color: rgb(67, 158, 255);
+        margin: 20px -15px -15px;
+        padding: 0px 15px;
+    }
+
+    #social-list li {
+        margin:auto;
+        display:block;
+    }
+
+    #social-list li a {
+        float:left;
+        display:inline-block;
+        margin: 0px 15px;
+        font-size: 40px;
+    }
+}

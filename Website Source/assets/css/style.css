@@ -3,7 +3,10 @@ Author: Tom Maddox
 Author Website: https://tommaddoxsoftware.co.uk
 */
 
-/*General Styles*/
+/* Include Media Queries */
+@import "media.css";
+
+/* General Styles */
 body {
     font-family: 'Montserrat', sans-serif;
 }
@@ -18,6 +21,14 @@ h1.inverse, h2.inverse, h3.inverse {
     text-shadow: 1px 1px 3px black;
 }
 
+/* Navbar Styles */
+#social-list li a {
+    float:left;
+    display:inline-block;
+}
+
+
+/* Home Page Styles */
 #intro {
     padding: 50px 150px;
     background-image:
@@ -25,7 +36,7 @@ h1.inverse, h2.inverse, h3.inverse {
         url('../img/backgrounds/christmas_tree_farm.jpg');
     background-size:cover;
     background-repeat: no-repeat;
-    height:calc(75vh - 56px);
+    min-height:calc(75vh - 56px);
     color:white;
 }
 
