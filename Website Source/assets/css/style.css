@@ -53,3 +53,9 @@ h1.inverse, h2.inverse, h3.inverse {
 #intro p {
     text-shadow: 1px 1px 1px black
 }
+
+#livemap {
+    height:600px;
+    width:90%;
+    margin:25px auto;
+}
