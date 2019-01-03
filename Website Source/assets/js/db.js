@@ -1,3 +1,5 @@
+var recreate = false;
+
 //Create required databases
 var tree_db = new PouchDB('trees');
 var customer_db = new PouchDB('customers');
@@ -25,7 +27,7 @@ var testCustomer = {
 
 var testTree = {
     "_id": "1",
-    "customer_id": 1,
+    "customer_id": "1",
     "location": {
         "lat": "50.452956",
         "long": "-3.602662"
@@ -41,4 +43,9 @@ var testTree = {
         "has_been_cut"  : 1
     },
     "shipping_date": "2018-12-16"
+}
+
+if(recreate == true) {
+    tree_db.put(testTree);
+    customer_db.put(testCustomer);
 }
