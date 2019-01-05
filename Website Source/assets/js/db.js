@@ -1,8 +1,7 @@
-var recreate = false;
-
 //Create required databases
 var tree_db = new PouchDB('trees');
 var customer_db = new PouchDB('customers');
+var employee_db = new PouchDB('employees');
 
 //Create some test data
 var testCustomer = {
@@ -45,7 +44,18 @@ var testTree = {
     "shipping_date": "2018-12-16"
 }
 
-if(recreate == true) {
+var testEmployee = {
+    "_id": 1,
+    "first_name": "Tom",
+    "last_name": "Maddox",
+    "login_code": null,
+    "registration_date": "2019/01/05"
+}
+
+if(localStorage.getItem('dbExists') == null) {
+    //Add test docs to database if they've not been already
     tree_db.put(testTree);
     customer_db.put(testCustomer);
+    employee_db.put(testEmployee);
+    localStorage.setItem("dbExists", true);
 }
