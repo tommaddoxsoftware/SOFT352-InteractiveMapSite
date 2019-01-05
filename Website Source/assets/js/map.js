@@ -39,7 +39,6 @@ function UpdateMarkers() {
         for(var j=0; j<result.total_rows; j++) {
              tree_db.get(result.rows[j].id).then(function(doc) {
                 trees.push(doc);
-                console.log(doc);
                 AddMarkers();
             });
         }
@@ -51,6 +50,7 @@ function AddMarkers(docs) {
     var tempPos;
     var contentString;
 
+    //Store customers in an array
     var customers = []
 
 
@@ -76,6 +76,10 @@ function AddMarkers(docs) {
 
             //Store customer in an array
             customers.push(customer);
+
+            //Store customers in localstorage so we don't have to reaccess database
+            localStorage.setItem("customers", JSON.stringify(customers));
+
 
             //Try catch, in case DB fetch fails.
             try {
@@ -131,9 +135,6 @@ function AddMarkers(docs) {
         }); //End .then()
 
     }
-
-    //Store customers in localstorage so we don't have to reaccess database
-    localStorage.setItem("customers", JSON.stringify(customers));
 }
 
 function ReplaceInfoWindow(btn) {
@@ -188,5 +189,34 @@ function ReplaceInfoWindow(btn) {
     form.appendChild(submitBtn);
     infoWindowContainer.append(form);
     infoWindowContainer.innerHTML+='</div>';
+}
 
+function DoLogin() {
+    //Get container ID from storage
+        var id = localStorage.getItem('last_edited_id');
+        var elemId = localStorage.getItem('containerid');
+        infoWindowContainer = document.getElementById(elemId);
+
+        //Create alert element
+        var alert = document.createElement('div');
+        var form = document.getElementById('cyo-livemap-login');
+
+        //Get submitted user ID
+        var submittedID = $('input[name="userID"]').val();
+        console.log("ajax request yo");
+        //ajax to check login correct
+        $.ajax({
+            url: "http://localhost:9000/login",
+            type: "post",
+            data: {"loginCode": submittedID},
+            success: function(result) {
+                switch(result.status) {
+                    case "success":
+                    break;
+
+                    case "error":
+                    break;
+                }
+            }
+        });
 }
