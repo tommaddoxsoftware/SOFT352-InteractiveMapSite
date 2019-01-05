@@ -1,84 +1,49 @@
 //Require Modules
-var http = require('http');
-var url = require("url");
-const { parse } = require('querystring');
+var http        = require('http');
+var url         = require("url");
+var express     = require("express");
+var bodyParser  = require("body-parser");
+var app         = express();
+
+//require database
+var databases = require("db.js");
+
 
 //Define Port
 var port = 9000;
 
+app.listen(port, function() {
+    console.log("Server started on port " + port);
+});
 
-//Create Server
-var server = http.createServer(function (req, res) {
-    var txt = "";
-    var reqData;
+app.use(bodyParser.urlencoded({extended:false}));
+app.use(bodyParser.json());
 
-    if (req.method === 'POST') {
-        collectRequestData(req, result => {
-            console.log(result);
-            reqData = result;
-        });
+//Handle Login
+app.post('/login', function(req, res) {
+    var response = {};
+    var loginCode = req.body.loginCode;
+
+    //Check that loginCode is 4 digits long
+    if(loginCode.length != 4) {
+        response = {
+            "status": "error",
+            "reason": "Login Code isn't 4 digits long."
+        }
     }
+    else if(loginCode == "" || loginCode == null) {
+        response = {
+            "status": "error",
+            "reason": "No Login Code was receieved by the server. Please try again."
+        }
+    }
+    //We have a login code, it's 4 digits, let's find it in the db
     else {
-        console.log("not a post req");
-        console.log(req.method);
+
     }
 
-    //Do different things depending on what url was requested
-    switch(req.url) {
-        case "/login":
-        console.log("Login was the URL");
-        console.log("Req Data: \n" + reqData);
-
-        break;
-        case "/createuser":
-            CreateUser();
-        break;
-        case "/getlocations":
-            GetLocations();
-        break;
-    }
 
     res.writeHead(200, {"Access-Control-Allow-Origin": "*", 'Content-Type': 'text/html'});
-    res.write(txt);
-    res.end();
-
+    res.write(JSON.stringify(response));
+    res.end("")
 });
-
-//Log server port to console
-server.listen(port, function(){
-    console.log("Server listening on port " + port);
-});
-
-function collectRequestData(request, callback) {
-    const FORM_URLENCODED = 'application/x-www-form-urlencoded; charset=UTF-8';
-    if(request.headers['content-type'] === FORM_URLENCODED) {
-        let body = '';
-        request.on('data', chunk => {
-    //        body += chunk.toString();
-            console.log(body);
-            console.log(chunk);
-            body = chunk.toString();
-        });
-        request.on('end', () => {
-            callback(parse(body));
-        });
-    }
-    else {
-        callback(null);
-    }
-}
-
-
-function HandleLogin(pin) {
-    //We want to return a json, initialise the JSON
-    var response = {};
-
-}
-
-function CreateUser() {
-
-}
-
-function GetLocations() {
-
-}
