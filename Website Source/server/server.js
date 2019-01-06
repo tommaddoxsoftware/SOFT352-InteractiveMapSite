@@ -58,7 +58,7 @@ app.post('/login', function(req, res) {
 
             //Loop through each doc to see if the login code is found
             for(var i = 0; i<result.total_rows; i++) {
-                var tmpLoginCode = result.rows[i].doc.login_code;;
+                var tmpLoginCode = result.rows[i].doc.login_code;
 
                 //Change our response to success
                 if(loginCode == tmpLoginCode) {
@@ -68,6 +68,11 @@ app.post('/login', function(req, res) {
 
                     //Exit the loop
                     break;
+                }
+
+                else {
+                    console.log("Found PIN: " + tmpLoginCode + " but this failed");
+                    console.log(result.rows[i].doc);
                 }
             }
         }).catch(function(err) {
@@ -92,35 +97,62 @@ app.post('/login', function(req, res) {
 
 app.post('/GetLocations', function(req, res) {
     res.writeHead(200, {"Access-Control-Allow-Origin": "*", 'Content-Type': 'text/html'});
-    var locations = [];
+    var locations   = [];
+    var trees       = [];
+    var cust        = [];
 
-    tree_db.allDocs({include_docs:true}).then(function(results){
-        for(var i=0; i<results.total_rows; i++) {
-            var id = results.rows[i].doc.customer_id;
-            var custDoc = GetCustomer(id);
-
-            var tempDoc = {
-                "customer": custDoc,
-                "tree": results.rows[i].doc
-            }
-
-            locations.push(tempDoc);
+    tree_db.allDocs({include_docs:true}).then(function(allTrees){
+        var tempTrees = [];
+        for(var i=0; i<allTrees.total_rows; i++) {
+            tempTrees.push(allTrees.rows[i].doc);
         }
-        console.log(locations);
-    }).catch(function(err) {
+
+        trees = tempTrees;
+    }).then(function(){
+        customer_db.allDocs({include_docs:true}).then(function(allCust) {
+            var tempCust = []
+            for(var j=0; j<allCust.total_rows; j++) {
+                tempCust.push(allCust.rows[j].doc);
+            }
+            cust = tempCust;
+        }).then(function(){
+            //Loop through each tree, match to customer
+            for(var k=0; k<trees.length; k++) {
+                var tempDoc;
+                var custFound = false;
+                var tempID = trees[k].customer_id;
+
+                //Loop through each customer
+                for(var m=0; m<cust.length; m++) {
+                    //If ID of the customer matches the ID of the tree
+                    if(tempID == cust[m]._id) {
+                        custFound = true;
+                        tempDoc = {
+                            "tree": trees[k],
+                            "customer": cust[m]
+                        }
+                    }
+                } //End customers for loop
+                if(custFound) {
+                    //Place in return array
+                    locations.push(tempDoc);
+                }
+                else{
+                    console.log("Tree Found with no customer. Tree info dump:");
+                    console.log(trees[k]);
+                }
+            } // End trees for loop
+            res.write(JSON.stringify(locations));
+            res.end();
+        }).catch(function(err){
+            console.log("Database Error! Dumping vars:");
+            console.log(err);
+        });
+    }).catch(function(err){
+        console.log("Database Error! Dumping vars:");
         console.log(err);
     });
 });
-
-function GetCustomer(id) {
-    var customer = customer_db.get(id.toString());
-    var customerDoc;
-    customer.then(function(customer) {
-        customerDoc = customer;
-    });
-
-    return customerDoc;
-}
 
 /*===================================/*/
 /*============  DATABASE  ==========/*/
@@ -141,32 +173,63 @@ function Create() {
 }
 
 function Populate() {
-    tree_db.put(testTree).catch(function(err) {
+    //Create or Update tree db with default test vals
+    tree_db.put(testTree).then(function(){
+    }).catch(function(err) {
         if(err.name == "conflict") {
-            console.log("Doc already exists in database - and nothing's changed since!");
+            tree_db.get(testTree._id).then(function(doc){
+
+                //Update
+                var newDoc = testTree;
+                newDoc._rev = doc._rev;
+
+                console.log("Updated Test Tree to default in tree_db");
+                return tree_db.put(newDoc);
+            });
         }
         else {
-            console.log("DB Error Occured: " + err);
+            console.log("An error occurred: " + err);
         }
     });
 
-    customer_db.put(testCustomer).catch(function(err) {
+    //Create or Update customer db with default test vals
+    customer_db.put(testCustomer).then(function(){
+    }).catch(function(err) {
         if(err.name == "conflict") {
-            console.log("Doc already exists in database - and nothing's changed since!");
+            customer_db.get(testCustomer._id).then(function(doc){
+
+                //Update
+                var newDoc = testCustomer;
+                newDoc._rev = doc._rev;
+
+                console.log("Updated Test Customer to default in tree_db");
+                return customer_db.put(newDoc);
+            });
         }
         else {
-            console.log("DB Error Occured: " + err);
+            console.log("An error occurred: " + err);
         }
     });
 
-    employee_db.put(testEmployee).catch(function(err) {
+    //Create or Update customer db with default test vals
+    employee_db.put(testEmployee).then(function(){
+    }).catch(function(err) {
         if(err.name == "conflict") {
-            console.log("Doc already exists in database - and nothing's changed since!");
+            employee_db.get(testEmployee._id).then(function(doc){
+
+                //Update
+                var newDoc = testEmployee;
+                newDoc._rev = doc._rev;
+
+                console.log("Updated Test Employee to default in tree_db");
+                return employee_db.put(newDoc);
+            });
         }
         else {
-            console.log("DB Error Occured: " + err);
+            console.log("An error occurred: " + err);
         }
     });
+
     console.log("Databases populated");
 }
 
