@@ -34,37 +34,46 @@ function UpdateMarkers() {
     //Clear Markers
     ClearMarkers();
 
-    //Find how many trees we have so we can allocate
-    tree_db.allDocs().then(function(result){
-        for(var j=0; j<result.total_rows; j++) {
-             tree_db.get(result.rows[j].id).then(function(doc) {
-                trees.push(doc);
-                AddMarkers();
-            });
+    //AJAX to get locations
+
+    $.ajax({
+        url: "http://localhost:9000/GetLocations",
+        type: 'POST',
+        success: function(result) {
+            result = JSON.parse(result);
+
+            //Store customers in an array
+            var customers = [];
+
+            for(var i=0; i<result.length; i++) {
+                //AddMarker(result[i]);
+                console.log(result);
+
+                //Store in customer array
+                customers.push(result[i].customer, result[i].tree);
+            }
         }
     });
 
+
+
 }
 
-function AddMarkers(docs) {
-    var tempPos;
+function AddMarkers(custDoc, custTreeDoc) {
+    //Create marker from doc
+    var tempPos = {lat: parseFloat(custTreeDoc.location.lat), lng: parseFloat(custTreeDoc.location.long)};
+    var tempMarker = new google.maps.Marker({
+        position: tempPos,
+        map: map,
+        icon: image
+    });
+
+    //Store the marker in an array in case we need to clear
+    gmarkers.push(tempMarker);
+
     var contentString;
 
-    //Store customers in an array
-    var customers = []
 
-
-    //Loop through all markers and add to map
-    for(var i=0; i<trees.length; i++) {
-        tempPos = { lat: parseFloat(trees[i].location.lat), lng: parseFloat(trees[i].location.long)}
-        tempMarker = new google.maps.Marker({
-            position: tempPos,
-            map: map,
-            icon: image
-        });
-
-        //Store the marker in an array in case we need to clear
-        gmarkers.push(tempMarker);
 
         //Now we've added the marker, we need to get the customer's details and add it to the marker
         var tempTree = trees[i]
@@ -210,6 +219,11 @@ function DoLogin() {
             type: "post",
             data: {"loginCode": submittedID},
             success: function(result) {
+                console.log(result);
+                console.log(JSON.parse(result));
+
+                //Parse the stringified JSON response
+                result = JSON.parse(result);
                 switch(result.status) {
                     case "success":
                     break;
