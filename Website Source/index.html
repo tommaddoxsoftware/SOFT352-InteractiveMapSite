@@ -1,12 +1,14 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <!-- Bootstrap Datepicker -->
+    <link rel="stylesheet" href="vendor/bootstrap-datepicker-1.6.4/css/bootstrap-datepicker.min.css">
     <!-- Fontawesome -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
     <!-- Custom CSS -->
@@ -15,9 +17,9 @@
     <link href="https://fonts.googleapis.com/css?family=Lato|Montserrat|Open+Sans|Roboto|Staatliches" rel="stylesheet">
 
     <title>Interactive map for Christmas Trees</title>
-  </head>
-  <body>
-      <!-- Navbar -->
+</head>
+<body>
+    <!-- Navbar -->
     <nav class="navbar navbar-dark bg-primary navbar-expand-md justify-content-center">
 
         <button class="navbar-toggler ml-1" type="button" data-toggle="collapse" data-target="#collapsingNavbar2">
@@ -33,10 +35,7 @@
                         <a class="nav-link" href="index.html">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Link</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Link</a>
+                        <a class="nav-link" href="signup.html">Register/Login</a>
                     </li>
                 </ul>
             </div>
@@ -51,52 +50,92 @@
         </div>
     </nav>
 
-      <section id="intro">
-          <div class="container-fluid">
-              <div class="row">
-                  <h1 class="text-center w-100 d-block mx-auto inverse" id="intro-title">Christmas Tree Locator</h1>
-                  <h3 class="inverse">What is it?</h3>
-                  <p>
-                      This piece of software allows employees to quickly locate trees that have been chosen
-                      by customers to be cut down for them this Christmas.
-                  </p>
-                  <p>
-                      The software allows employees to view details such as the height of the tree, the colour
-                      of the label, and the date of which it should be cut on.
-                  </p>
+    <section id="intro">
+        <div class="container-fluid">
+            <div class="row">
+                <h1 class="text-center w-100 d-block mx-auto inverse" id="intro-title">Christmas Tree Locator</h1>
+                <h3 class="inverse">What is it?</h3>
+                <p>
+                    This piece of software allows employees to quickly locate trees that have been chosen
+                    by customers to be cut down for them this Christmas.
+                </p>
+                <p>
+                    The software allows employees to view details such as the height of the tree, the colour
+                    of the label, and the date of which it should be cut on.
+                </p>
 
-                  <h3 class="inverse">How do I use It?</h3>
-                  <p>
-                      To access the map, <a href="#map">Scroll down to the Map</a>. This will have loaded all customer trees and placed
-                      them on the map with a map marker.
-                  </p>
-                  <p>
-                      To view details for each tree, click on it's marker. Here you will be shown relevant information for that tree.
-                      To close the information panel, click on the "x" icon in the top right corner.
-                  </p>
-                  <p>
-                      If you are logged in, you will be able to use the edit functions of the software to make changes to
-                      tree information. You'll need your randomly generated 4 digit login pin to do so.
-                      <br>
-                      If you do not have a login, please <a href="">Register here</a>
-                  </p>
+                <h3 class="inverse">How do I use It?</h3>
+                <p>
+                    To access the map, <a href="#map">Scroll down to the Map</a>. This will have loaded all customer trees and placed
+                    them on the map with a map marker.
+                </p>
+                <p>
+                    To view details for each tree, click on it's marker. Here you will be shown relevant information for that tree.
+                    To close the information panel, click on the "x" icon in the top right corner.
+                </p>
+                <p>
+                    If you are logged in, you will be able to use the edit functions of the software to make changes to
+                    tree information. You'll need your randomly generated 4 digit login pin to do so.
+                    <br>
+                    If you do not have a login, please <a href="">Register here</a>
+                </p>
 
-              </div>
-          </div>
-      </section>
-      <section id="map">
-          <div class="container-fluid">
-              <div class="row">
-                  <div id="livemap"></div>
-              </div>
-          </div>
-      </section>
+            </div>
+        </div>
+    </section>
+    <section id="map">
+        <div class="container-fluid">
+            <div class="row">
+                <h2 class="text-center w-100">Tree Livemap</h2>
+                <p class="w-100 text-center">Click to Add Marker</p>
+                <div class="switch-wrap w-100 d-block">
+                    <div class="onoffswitch mx-auto">
+                        <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" >
+                        <label class="onoffswitch-label" for="myonoffswitch">
+                            <span class="onoffswitch-inner"></span>
+                            <span class="onoffswitch-switch"></span>
+                        </label>
+                    </div>
+                </div>
+                <div id="mapWrap">
+                    <div id="livemap"></div>
+                    <!-- Modal -->
+                    <div class="modal fade" id="mapModal" tabindex="-1" role="dialog" aria-labelledby="ModalTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="ModalTitle">Add New Tree</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="container-fluid">
+                                        <div class="row">
+                                            <div class="col-5">
+                                                <button type="button" class="btn btn-block btn-primary" onclick="AssignCustomer('exists')">Existing customer</button>
+                                            </div>
+                                            <div class="col-2" style="line-height:40px;">OR</div>
+                                            <div class="col-5">
+                                                <button type="button" class="btn btn-block btn-primary" onclick="AssignCustomer('new')">New Customer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
 
     <!-- Load script files at bottom of page for loading speed purposes -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>s
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script src="vendor/bootstrap-datepicker-1.6.4/js/bootstrap-datepicker.min.js"></script>
 
     <!-- Google Maps with API key --->
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAfXFGcdptb_boFKX4VGwadzAwJWznXr-c&callback=initMap"
@@ -105,5 +144,5 @@
     <!-- Custom JS files -->
     <script src="assets/js/map.js"></script>
 
-  </body>
+</body>
 </html>
