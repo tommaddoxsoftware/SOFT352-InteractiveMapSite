@@ -9,6 +9,8 @@ var app         = express();
 //Define Port
 var port = 9000;
 
+var lastLoggedIn = null;
+
 app.listen(port, function() {
     console.log("Server started on port " + port);
 
@@ -49,7 +51,6 @@ app.post('/login', function(req, res) {
         promise = employee_db.allDocs({
             include_docs: true
         }).then(function(result) {
-            console.log("Yikes");
             //Setup response for if we don't find the pin
             response = {
                 "status": "error",
@@ -65,6 +66,9 @@ app.post('/login', function(req, res) {
                     response = {
                         "status": "success"
                     }
+
+                    //Save as the last logged in user for logging purposes
+                    lastLoggedIn = loginCode;
 
                     //Exit the loop
                     break;
@@ -152,6 +156,86 @@ app.post('/GetLocations', function(req, res) {
         console.log("Database Error! Dumping vars:");
         console.log(err);
     });
+});
+
+app.post('/LivemapApplyEdit', function(req, res) {
+    var post = req.body;
+
+    //Get IDs from POST
+    var treeID = post.treeID;
+    var custID = post.userID;
+
+    var ajaxResponse;
+
+    //Get database docs
+    var treeProm = tree_db.get(treeID.toString()).then(function(doc){
+        var updatedDoc = doc;
+        updatedDoc._rev = doc._rev;
+        updatedDoc.cutting_info.has_been_cut = post.cut;
+        updatedDoc.cutting_info.cut_date = cutDate;
+        updatedDoc.shipping_date = collectDate;
+
+        //Run the update
+        return tree_db.put(newDoc);
+    }).then(function(response) {
+        if(response.ok) {
+            ajaxResponse = {
+                status: "success"
+            }
+            console.log("Tree Updated in Database. ID of updated tree: " + treeID);
+        }
+        else {
+            ajaxResponse = {
+                status: "error",
+                reason: "Update Query Failed. Please Retry"
+            }
+        }
+        res.write(JSON.stringify(ajaxResponse));
+        res.end();
+    }).catch(function (err){
+        console.log(err);
+        ajaxResponse = {
+            status: "error",
+            reason: err
+        }
+        res.write(JSON.stringify(ajaxResponse));
+        res.end();
+    });
+});
+
+app.post('/LivemapRemoveBooking', function(req, res) {
+    var post = req.body;
+
+    var treeID = post.treeID;
+    tree_db.get(treeID.toString()).then(function(doc) {
+        //Run the delete query
+        return tree_db.remove(doc);
+    }).then(function(response){
+        if(response.ok) {
+            ajaxResponse = {
+                status: "success"
+            }
+            console.log("Tree REMOVED from Database.");
+        }
+        else {
+            ajaxResponse = {
+                status: "error",
+                reason: "Delete Query Failed. Please Retry"
+            }
+        }
+
+        res.write(JSON.stringify(ajaxResponse));
+        res.end();
+    }).catch(function(err){
+        ajaxResponse = {
+            status: "error",
+            reason: err
+        }
+    });
+});
+
+app.post('/GetCustomer', function(req, res) {
+
 });
 
 /*===================================/*/
