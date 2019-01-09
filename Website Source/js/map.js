@@ -620,6 +620,30 @@ function AssignCustomer(exist) {
         $('#btn-continue').click(function() {
             var custDoc;
             //Get customer doc from ajax then pass it to AddNewTree
+            $.ajax({
+                url: 'http://localhost:9000/GetCustomer',
+                type: 'POST',
+                data: {'custID': $("#customerSelect").val().toString()},
+                success: function(result) {
+                    response = JSON,parse(result);
+
+                    switch(response.status) {
+                        case "success":
+                            custDoc = response.custDoc;
+                        break;
+                        case "error":
+                            //Check if alert exists
+                            if($('#errAlert').length == 0) {
+                                $('.modal-body').prepend("<div id='errAlert' class='alert alert-danger'>" + response.reason + "</div>");
+                            }
+                            else {
+                                //Update alert instead of prepend
+                                $('#errAlert').text(response.reason);
+                            }
+                        break;
+                    }
+                }
+            });
 
             AddNewTree(custDoc)
         })
@@ -672,6 +696,24 @@ function AssignCustomer(exist) {
                     "delivery": delivery.toString(),
                     "payment_info": payment
                 }
+
+                $.ajax({
+                    url: 'http://localhost:9000/AddCustomer',
+                    type: 'POST',
+                    data: {'customer': custDoc},
+                    success: function(result) {
+                        response = JSON,parse(result);
+
+                        switch(response.status) {
+                            case "success":
+
+                            break;
+                            case "error":
+
+                            break;
+                        }
+                    }
+                });
             });
         break;
     }

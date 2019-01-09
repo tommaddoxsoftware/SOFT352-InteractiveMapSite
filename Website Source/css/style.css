@@ -33,7 +33,7 @@ h1.inverse, h2.inverse, h3.inverse {
     padding: 50px 150px;
     background-image:
         linear-gradient(rgba(30,30,30, 0.5), rgba(50,50,50,0.55)),
-        url('../img/backgrounds/christmas_tree_farm.jpg');
+        url('../assets/backgrounds/christmas_tree_farm.jpg');
     background-size:cover;
     background-repeat: no-repeat;
     min-height:calc(75vh - 56px);
