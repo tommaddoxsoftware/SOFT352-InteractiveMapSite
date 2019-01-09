@@ -39,13 +39,11 @@ function placeMarker(position, map) {
         var lng = position.lng();
 
         var newTreeLoc = {
-            lat: lat,
-            lng: lng
+            lat: lat.toString(),
+            long: lng.toString()
         }
 
         localStorage.setItem("newTreeLoc", JSON.stringify(newTreeLoc));
-
-        console.log("lat: " + lat + "long: " + lng);
 
         //Append modal background inside map
         $('.modal-backdrop').appendTo('#mapWrap');
@@ -53,11 +51,6 @@ function placeMarker(position, map) {
         //remove padding right and modal-open class
         $('body').removeClass();
         $('body').css("padding-right", "");
-
-        console.log("open modal attempt");
-        //Create Tree doc
-        //Create Customer doc
-        //Add marker
 
         //Center on new marker
         map.panTo(position);
@@ -78,7 +71,6 @@ function UpdateMarkers() {
     ClearMarkers();
 
     //AJAX to get locations
-
     $.ajax({
         url: "http://localhost:9000/GetLocations",
         type: 'POST',
@@ -88,6 +80,12 @@ function UpdateMarkers() {
             for(var i=0; i<parsedResult.length; i++) {
                 AddMarker(parsedResult[i].customer, parsedResult[i].tree);
             }
+        },
+        error: function(xhr, status, error) {
+            console.log("Ajax error. Dumping:");
+            console.log(xhr);
+            console.log(status);
+            console.log(error);
         }
     });
 }
@@ -101,10 +99,9 @@ function AddMarker(custDoc, custTreeDoc) {
         icon: image
     });
 
+
     //Store the marker in an array in case we need to clear
     gmarkers.push(tempMarker);
-
-
     //Store customer in an array
     customers.push(custDoc);
     trees.push(custTreeDoc);
@@ -150,7 +147,7 @@ function AddMarker(custDoc, custTreeDoc) {
          '</div>';
     }
     catch(ex) {
-        console.log("And error occured. Error was " + ex);
+        console.log("An error occured. Error was " + ex);
         console.log("Debugging:");
         console.log(custDoc);
         console.log(treeDoc);
@@ -619,19 +616,26 @@ function AssignCustomer(exist) {
         modalBody.html("<div class='container-fluid'><h3>Assign Customer</h3><div class='row'><div class='form-group m-4 mx-auto w-50'><label for='customerAssignSelect'>Choose a customer:</label><select class='form-control' id='customerSelect'>"+selectOptions+"</select></div></div><div class='row'><button id='btn-continue' class='btn btn-success btn-block mx-auto' style='width:150px;' type='button'>Continue</button></div></div>")
         $('#btn-continue').click(function() {
             var custDoc;
+
+            var id = $("#customerSelect").val().toString();
+
             //Get customer doc from ajax then pass it to AddNewTree
             $.ajax({
                 url: 'http://localhost:9000/GetCustomer',
                 type: 'POST',
-                data: {'custID': $("#customerSelect").val().toString()},
+                data: {'custID': id},
                 success: function(result) {
-                    response = JSON,parse(result);
+                    response = JSON.parse(result);
+
 
                     switch(response.status) {
                         case "success":
+
                             custDoc = response.custDoc;
+                            AddNewTree(custDoc);
                         break;
                         case "error":
+                            console.log("error");
                             //Check if alert exists
                             if($('#errAlert').length == 0) {
                                 $('.modal-body').prepend("<div id='errAlert' class='alert alert-danger'>" + response.reason + "</div>");
@@ -642,10 +646,14 @@ function AssignCustomer(exist) {
                             }
                         break;
                     }
+                },
+                error: function(xhr, status, error) {
+                    console.log("Ajax error. Dumping:");
+                    console.log(xhr);
+                    console.log(status);
+                    console.log(error);
                 }
             });
-
-            AddNewTree(custDoc)
         })
         break;
         case "new":
@@ -702,16 +710,30 @@ function AssignCustomer(exist) {
                     type: 'POST',
                     data: {'customer': custDoc},
                     success: function(result) {
-                        response = JSON,parse(result);
+                        response = JSON.parse(result);
 
                         switch(response.status) {
                             case "success":
-
+                                var newCustDoc = response.custDoc;
+                                AddNewTree(newCustDoc);
                             break;
                             case "error":
-
+                                //Check if alert exists
+                                if($('#errAlert').length == 0) {
+                                    $('.modal-body').prepend("<div id='errAlert' class='alert alert-danger'>" + response.reason + "</div>");
+                                }
+                                else {
+                                    //Update alert instead of prepend
+                                    $('#errAlert').text(response.reason);
+                                }
                             break;
                         }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("Ajax error. Dumping:");
+                        console.log(xhr);
+                        console.log(status);
+                        console.log(error);
                     }
                 });
             });
@@ -720,10 +742,11 @@ function AssignCustomer(exist) {
 
 }
 
-function AddNewTree() {
+function AddNewTree(custDoc) {
+    console.log(custDoc);
     var customer = {
-        id: $('#customerSelect').val(),
-        name: $('#customerSelect').text()
+        id: custDoc._id,
+        name: custDoc.first_name + " " + custDoc.last_name
     }
     var modalBody = $('.modal-body');
 
@@ -738,7 +761,7 @@ function AddNewTree() {
     newContent += "<div class='form-group mx-auto w-75'><label for='tree_id'>Tree ID:</label><input class='form-control' type='number' required id='tree_id'></div>";
     newContent += "<div class='form-group mx-auto w-75'><label for='tree_size'>Tree Size:</label><input class='form-control' type='number' required id='tree_size' maxlength='2'></div>";
     newContent += "<div class='form-group mx-auto w-75'><label for='tree_species'>Species:</label><input class='form-control' type='text' required id='tree_species'></div>";
-    newContent += "<div class='form-group mx-auto w-75'><label for='tree_labelCol'>Label Colour:</label><input class='form-control' type='number' required id='tree_labelCol'></div>";
+    newContent += "<div class='form-group mx-auto w-75'><label for='tree_labelCol'>Label Colour:</label><input class='form-control' type='text' required id='tree_labelCol'></div>";
     newContent += "<div class='form-group mx-auto w-75'><label for='shipDate'>Shipping/Collect Date:</label><div class='input-group date'><input type='text' class='form-control' required  id='shipDateInput'><div class='input-group-append'><span class='input-group-text'><i class='fa fa-calendar'></i></span></div></div></div>";
     newContent += "<div class='form-group mx-auto w-75'><label for='radio_cut'>Has the tree been cut?</label><div id='livemap-radio-wrap'><div class='form-check form-check-inline'><input type='radio' class='form-check-input' checked name='radio_cut' id='inlineRadio1' value='0'><label class='form-check-label' for='inlineRadio1'>No</label></div><div class='form-check form-check-inline'><input type='radio' class='form-check-input' name='radio_cut' id='inlineRadio2' value='1'><label class='form-check-label' for='inlineRadio2'>Yes</label></div></div></div>";
     newContent += "<button id='UploadTreeBtn' class='btn btn-lg btn-block btn-success m-4' type='button'>Add Tree</button>";
@@ -752,15 +775,24 @@ function AddNewTree() {
 
 
     $('#UploadTreeBtn').click(function(){
+        var tempDateString = $('#shipDateInput').val();
+        var tempDate = new Date(tempDateString);
+        var cutDate = new Date();
+        cutDate.setDate(tempDate.getDate() - 2);
+
+        var cutDateString = createDateString(cutDate);
+
+
+        var treeID = trees.length+1;
         //Create Tree Doc
         var treeDoc = {
-            _id: trees.length+1, //Increment ID
+            _id: treeID.toString(), //Increment ID
             customer_id: custDoc._id.toString(),
             cutting_info: {
-                cut_date: $('#shipDateInput').val().toString(),
+                cut_date: cutDateString,
                 has_been_cut: $('input[name="radio_cut"]:checked').val()
             },
-            shipping_date: $('shipDateInput').val().toString(),
+            shipping_date: $('#shipDateInput').val().toString(),
             location: JSON.parse(localStorage.getItem("newTreeLoc")),
             tree: {
                 size: $('#tree_size').val().toString(),
@@ -770,11 +802,56 @@ function AddNewTree() {
             }
         }
 
-        //Add the marker to map!
-        AddMarker(custDoc, treeDoc);
+        $.ajax({
+            url: "http://localhost:9000/AddTree",
+            type: 'POST',
+            data: {"tree": JSON.stringify(treeDoc)},
+            success: function(result) {
+                response = JSON.parse(result);
+
+                switch(response.status) {
+                    case "success":
+                        //Add the marker to map!
+                        treeDoc = response.treeDoc;
+                        AddMarker(custDoc, treeDoc);
+                        ResetModal();
+                    break;
+                    case "error":
+                    break;
+                }
+            }
+        });
+
 
     });
+}
+
+function createDateString(date) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+
+    return [year, month, day].join('-');
+}
+
+function ResetModal() {
+    $('.modal-body').modal('hide');
+    $('.modal-body').html("<div class='container-fluid'><div class='row'><div class='col-5'><button type='button' class='btn btn-block btn-primary' onclick='AssignCustomer(\"exists\")'>Existing customer</button></div><div class='col-2' style='line-height:40px;'>OR</div><div class='col-5'><button type='button' class='btn btn-block btn-primary' onclick='AssignCustomer(\"new\")'>New Customer</button></div></div></div>"
+);
+    localStorage.removeItem("newTreeLoc");
+}
 
 
-
+function Debug() {
+    $.ajax({
+        url: "http://localhost:9000/debug",
+        type: 'POST',
+        success: function(result) {
+            console.log(JSON.parse(result));
+        }
+    });
 }
