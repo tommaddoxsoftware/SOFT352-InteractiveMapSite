@@ -235,7 +235,73 @@ app.post('/LivemapRemoveBooking', function(req, res) {
 });
 
 app.post('/GetCustomer', function(req, res) {
+    var post = req.body;
+    var custID = post.custID;
+    var custDoc;
+    var response;
+    customer_db.get(custID).then(function(doc){
+        custDoc = doc;
 
+        response = {
+            status: "success",
+            custDoc: custDoc
+        }
+
+        res.write(JSON.stringify(response));
+        res.end();
+    }).catch(function(err){
+        console.log("Error while fetching customer from database: " + err);
+        response = {
+            status: "error",
+            reason: "Error while fetching customer with given ID. Please try again."
+        }
+        res.write(JSON.stringify(response));
+        res.end();
+    });
+
+});
+
+app.post('/AddCustomer', function(req, res) {
+    var post = req.body;
+    var newCust = post.customer;
+    var ajaxResponse;
+
+    customer_db.put(newCust).then(function(response) {
+        if(response.ok) {
+            customer.get(newCust._id).then(function(doc) {
+                ajaxResponse = {
+                    status: "success",
+                    custDoc: doc
+                }
+
+                res.write(JSON.stringify(ajaxResponse));
+                res.end();
+            }).catch(function(err) {
+                ajaxResponse = {
+                    status: "error",
+                    reason: "Error occured while creating new customer. Please try again."
+                }
+                res.write(JSON.stringify(ajaxResponse));
+                res.end();
+            });
+        }
+        else {
+            ajaxResponse = {
+                status: "error",
+                reason: "Error occured while creating new customer. Please try again."
+            }
+            res.write(JSON.stringify(ajaxResponse));
+            res.end();
+        }
+    }).catch(function(err){
+        console.log(err);
+        ajaxResponse = {
+            status: "error",
+            reason: "Error occured while creating new customer. Please try again."
+        }
+        res.write(JSON.stringify(ajaxResponse));
+        res.end();
+    });
 });
 
 /*===================================/*/
