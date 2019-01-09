@@ -159,6 +159,7 @@ app.post('/GetLocations', function(req, res) {
 });
 
 app.post('/LivemapApplyEdit', function(req, res) {
+    res.writeHead(200, {"Access-Control-Allow-Origin": "*", 'Content-Type': 'text/html'});
     var post = req.body;
 
     //Get IDs from POST
@@ -204,6 +205,7 @@ app.post('/LivemapApplyEdit', function(req, res) {
 });
 
 app.post('/LivemapRemoveBooking', function(req, res) {
+    res.writeHead(200, {"Access-Control-Allow-Origin": "*", 'Content-Type': 'text/html'});
     var post = req.body;
 
     var treeID = post.treeID;
@@ -235,6 +237,7 @@ app.post('/LivemapRemoveBooking', function(req, res) {
 });
 
 app.post('/GetCustomer', function(req, res) {
+    res.writeHead(200, {"Access-Control-Allow-Origin": "*", 'Content-Type': 'text/html'});
     var post = req.body;
     var custID = post.custID;
     var custDoc;
@@ -262,13 +265,14 @@ app.post('/GetCustomer', function(req, res) {
 });
 
 app.post('/AddCustomer', function(req, res) {
+    res.writeHead(200, {"Access-Control-Allow-Origin": "*", 'Content-Type': 'text/html'});
     var post = req.body;
     var newCust = post.customer;
     var ajaxResponse;
 
     customer_db.put(newCust).then(function(response) {
         if(response.ok) {
-            customer.get(newCust._id).then(function(doc) {
+            customer_db.get(newCust._id).then(function(doc) {
                 ajaxResponse = {
                     status: "success",
                     custDoc: doc
@@ -301,6 +305,67 @@ app.post('/AddCustomer', function(req, res) {
         }
         res.write(JSON.stringify(ajaxResponse));
         res.end();
+    });
+});
+
+app.post('/AddTree', function(req, res) {
+    res.writeHead(200, {"Access-Control-Allow-Origin": "*", 'Content-Type': 'text/html'});
+    var post = req.body;
+    var treeDoc = JSON.parse(post.tree);
+    console.log("Post:");
+    console.log(post);
+    console.log("TreeDoc:");
+    console.log(treeDoc);
+
+
+    tree_db.put(treeDoc).then(function(response) {
+        if(response.ok) {
+            tree_db.get(treeDoc._id).then(function(doc) {
+                ajaxResponse = {
+                    status: "success",
+                    treeDoc: doc
+                }
+
+                res.write(JSON.stringify(ajaxResponse));
+                res.end();
+            }).catch(function(err) {
+                ajaxResponse = {
+                    status: "error",
+                    reason: "Error occured while adding tree to database. Please try again."
+                }
+                res.write(JSON.stringify(ajaxResponse));
+                res.end();
+            });
+        }
+        else {
+            ajaxResponse = {
+                status: "error",
+                reason: "Error occured while adding tree to database. Please try again."
+            }
+            res.write(JSON.stringify(ajaxResponse));
+            res.end();
+        }
+    }).catch(function(err){
+        console.log(err);
+        ajaxResponse = {
+            status: "error",
+            reason: "Error occured while adding tree to database. Please try again."
+        }
+        res.write(JSON.stringify(ajaxResponse));
+        res.end();
+    });
+
+});
+
+app.post('/debug', function(req,res) {
+    res.writeHead(200, {"Access-Control-Allow-Origin": "*", 'Content-Type': 'text/html'});
+
+    tree_db.allDocs({include_docs:true}).then(function(result) {
+        console.log(result);
+        res.write(JSON.stringify(result));
+        res.end();
+    }).catch(function(err) {
+        console.log(err);
     });
 });
 
