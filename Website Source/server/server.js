@@ -372,6 +372,45 @@ app.post('/debug', function(req,res) {
     });
 });
 
+app.post('/register', function(req, res) {
+    res.writeHead(200, {"Access-Control-Allow-Origin": "*", 'Content-Type': 'text/html'});
+    var randomNum = Math.floor(Math.random() * 9999 + 0000);
+
+    employee_db.allDocs({include_docs:true}).then(function(result){
+        for(var i=0; i<result.total_rows; i++) {
+            if(randomNum == result.rows[i].doc._id) {
+                randomNum = Math.floor(Math.random() * 9999 + 0000);
+                i = 0; // Restart the loop
+            }
+        }
+        response = {status: "success", login: randomNum}
+        var today = new Date().toISOString().slice(0,10);
+        employee_db.put({
+            _id:
+            first_name: post.first_name,
+            last_name: post.last_name,
+            loginCode: randomNum,
+            registration_date: today
+        }).then(function(result){
+            if(result.ok) {
+                res.write(JSON.stringify(response));
+                res.end();
+            }
+            else {
+                response = {status: "error", reason: "An error occured when trying to generate a random login pin"}
+                res.write(JSON.stringify(response))
+                res.end();
+            }
+        });
+
+    }).catch(function(err){
+        console.log(err);
+        response = {status: "error", reason: "An error occured when trying to generate a random login pin"}
+        res.write(JSON.stringify(response));
+        res.end();
+    });
+});
+
 /*===================================/*/
 /*============  DATABASE  ==========/*/
 /*==================================/*/
