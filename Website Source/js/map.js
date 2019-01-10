@@ -103,7 +103,14 @@ function AddMarker(custDoc, custTreeDoc) {
     //Store the marker in an array in case we need to clear
     gmarkers.push(tempMarker);
     //Store customer in an array
-    customers.push(custDoc);
+    //Check if docs already exists in array
+    var containsID = function(element) {
+        return element._id = custDoc._id;
+    }
+
+    if(!customers.some(containsID)) {
+        customers.push(custDoc);
+    }
     trees.push(custTreeDoc);
 
     //Store customers and trees in localstorage so we don't have to reaccess database
@@ -685,12 +692,14 @@ function AssignCustomer(exist) {
                 var email = $('#email').val();
                 var delivery = $('#delivery_check:checked').val();
                 var payment = {
-                    paid: $('#paid_check:checked').val().toString(),
+                    paid: $('#paid_check:checked').val(),
                     date: $('#payment_date').val().toString(),
                     tree_cost: $('#tree_cost').val().toString(),
                     delivery_cost:$('#delivery_cost').val().toString(),
                     total: total
                 }
+
+
 
                 var custDoc = {
                     "_id": (customers.length + 1).toString(),
@@ -701,14 +710,14 @@ function AssignCustomer(exist) {
                     "postcode": postcode.toString(),
                     "town": town.toString(),
                     "email": email.toString(),
-                    "delivery": delivery.toString(),
+                    "delivery": delivery,
                     "payment_info": payment
                 }
 
                 $.ajax({
                     url: 'http://localhost:9000/AddCustomer',
                     type: 'POST',
-                    data: {'customer': custDoc},
+                    data: {'customer': JSON.stringify(custDoc)},
                     success: function(result) {
                         response = JSON.parse(result);
 
@@ -821,8 +830,6 @@ function AddNewTree(custDoc) {
                 }
             }
         });
-
-
     });
 }
 
