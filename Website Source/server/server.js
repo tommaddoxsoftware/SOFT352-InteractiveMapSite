@@ -267,7 +267,7 @@ app.post('/GetCustomer', function(req, res) {
 app.post('/AddCustomer', function(req, res) {
     res.writeHead(200, {"Access-Control-Allow-Origin": "*", 'Content-Type': 'text/html'});
     var post = req.body;
-    var newCust = post.customer;
+    var newCust = JSON.parse(post.customer);
     var ajaxResponse;
 
     customer_db.put(newCust).then(function(response) {
@@ -361,8 +361,11 @@ app.post('/debug', function(req,res) {
     res.writeHead(200, {"Access-Control-Allow-Origin": "*", 'Content-Type': 'text/html'});
 
     tree_db.allDocs({include_docs:true}).then(function(result) {
-        console.log(result);
-        res.write(JSON.stringify(result));
+        resp = {
+            status: "success",
+            data: result
+        }
+        res.write(JSON.stringify(resp));
         res.end();
     }).catch(function(err) {
         console.log(err);
